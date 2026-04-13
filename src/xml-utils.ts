@@ -53,20 +53,41 @@ export function extractParagraphStyles(docXml: Record<string, unknown>): string[
 }
 
 export function extractParagraphText(p: Record<string, unknown>): string {
-  const runs = ensureArray(p?.['w:r']);
-  return runs
-    .map((r) => {
-      const rn = asRecord(r);
-      const t = rn?.['w:t'];
-      if (!t) return '';
-      return ensureArray(t)
-        .map((tn) => {
-          const tnn = asRecord(tn);
-          return String(tnn?.['#text'] ?? '');
-        })
-        .join('');
-    })
-    .join('');
+  return findAllTextInNode(p).join('');
+}
+
+/**
+ * Recursively finds all <w:t> text nodes within any OOXML node,
+ * regardless of nesting depth (w:ins, w:del, w:proofErr, w:smartTag, etc.).
+ * This handles OOXML run fragmentation correctly.
+ */
+export function findAllTextInNode(node: Record<string, unknown> | undefined): string[] {
+  if (!node) return [];
+  const texts: string[] = [];
+
+  for (const [key, val] of Object.entries(node)) {
+    if (key === 'w:t') {
+      const tArr = ensureArray(val);
+      for (const t of tArr) {
+        const tn = asRecord(t);
+        if (tn && '#text' in tn) {
+          texts.push(String(tn['#text']));
+        }
+      }
+    } else if (typeof val === 'object' && val !== null) {
+      if (Array.isArray(val)) {
+        for (const item of val) {
+          if (typeof item === 'object' && item !== null) {
+            texts.push(...findAllTextInNode(item as Record<string, unknown>));
+          }
+        }
+      } else {
+        texts.push(...findAllTextInNode(val as Record<string, unknown>));
+      }
+    }
+  }
+
+  return texts;
 }
 
 export function extractCommentRange(docXml: Record<string, unknown>, commentId: string): string {

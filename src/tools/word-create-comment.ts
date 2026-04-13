@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
 import { validateDocxPath } from '../validation.js';
+import { findAllTextInNode } from '../xml-utils.js';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 export const WORD_CREATE_COMMENT_SCHEMA = {
@@ -75,19 +76,7 @@ function extractFullText(docXml: Record<string, unknown>): string {
   const body = docXml?.['w:document']?.['w:body'];
   if (!body) return '';
   const paragraphs = ensureArray(body?.['w:p']);
-  return paragraphs.map((p) => extractParagraphText(p as Record<string, unknown>)).join('\n');
-}
-
-function extractParagraphText(p: Record<string, unknown>): string {
-  return ensureArray(p?.['w:r'])
-    .map((r) => {
-      const rn = r as Record<string, unknown>;
-      return ensureArray(rn?.['w:t']).map((t) => {
-        const tn = t as Record<string, unknown>;
-        return String(tn['#text'] ?? '');
-      }).join('');
-    })
-    .join('');
+  return paragraphs.map((p) => findAllTextInNode(p as Record<string, unknown>).join('')).join('\n');
 }
 
 async function loadOrInitComments(zip: JSZip): Promise<Record<string, unknown>> {
@@ -145,7 +134,7 @@ function addCommentToXml(commentsXml: Record<string, unknown>, id: string, autho
   const comments = commentsXml['w:comments'] as Record<string, unknown>;
   if (!comments) return;
   const existing = ensureArray(comments['w:comment']);
-  existing.push(newComment['w:comment']);
+  existing.push(newComment);
   comments['w:comment'] = existing;
 }
 
@@ -157,7 +146,7 @@ function addCommentAnchors(docXml: Record<string, unknown>, searchText: string, 
   let globalOffset = 0;
 
   for (let i = 0; i < paragraphs.length; i++) {
-    const pText = extractParagraphText(paragraphs[i] as Record<string, unknown>);
+    const pText = findAllTextInNode(paragraphs[i] as Record<string, unknown>).join('');
     const localPos = searchText.indexOf(pText);
 
     if (localPos !== -1 || (globalOffset <= searchText.length && globalOffset + pText.length >= searchText.length)) {

@@ -4,6 +4,9 @@ docs/
 # Conductor project management (not for public release)
 conductor/
 
+# Temporary files
+tmp/
+
 # Dependencies
 node_modules/
 

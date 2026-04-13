@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
 import { validateDocxPath } from '../validation.js';
+import { findAllTextInNode } from '../xml-utils.js';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 export const WORD_SEARCH_REPLACE_SCHEMA = {
@@ -33,7 +34,6 @@ export async function wordSearchReplace(args: Record<string, unknown>): Promise<
   const docXmlStr = await docFile.async('text');
   const docXml = parser.parse(docXmlStr) as Record<string, unknown>;
 
-  // Find all matches
   const fullText = extractFullText(docXml);
   const matches: number[] = [];
   let pos = 0;
@@ -53,10 +53,8 @@ export async function wordSearchReplace(args: Record<string, unknown>): Promise<
     return { content: [{ type: 'text', text: `matchIndex ${matchIndex} out of range. Found ${matches.length} matches.` }], isError: true };
   }
 
-  // Perform replacements in the XML
   replaceInXml(docXml, searchText, replacementText, targets as number[]);
 
-  // Save modified document
   const newDocXmlStr = builder.build(docXml);
   zip.file('word/document.xml', newDocXmlStr);
   const output = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
@@ -82,20 +80,7 @@ function extractFullText(docXml: Record<string, unknown>): string {
   const body = docXml?.['w:document']?.['w:body'];
   if (!body) return '';
   const paragraphs = ensureArray(body?.['w:p']);
-  return paragraphs.map((p) => extractParagraphText(p as Record<string, unknown>)).join('\n');
-}
-
-function extractParagraphText(p: Record<string, unknown>): string {
-  const runs = ensureArray(p?.['w:r']);
-  return runs.map((r) => {
-    const rn = r as Record<string, unknown>;
-    const t = rn?.['w:t'];
-    if (!t) return '';
-    return ensureArray(t).map((tn) => {
-      const tnn = tn as Record<string, unknown>;
-      return String(tnn['#text'] ?? '');
-    }).join('');
-  }).join('');
+  return paragraphs.map((p) => findAllTextInNode(p as Record<string, unknown>).join('')).join('\n');
 }
 
 function replaceInXml(docXml: Record<string, unknown>, searchText: string, replacementText: string, matchPositions: number[]): void {
@@ -107,20 +92,18 @@ function replaceInXml(docXml: Record<string, unknown>, searchText: string, repla
 
   for (const p of paragraphs) {
     const pn = p as Record<string, unknown>;
-    const pText = extractParagraphText(pn);
+    const pText = findAllTextInNode(pn).join('');
     const pStart = globalOffset;
     const pEnd = globalOffset + pText.length;
 
-    // Check if any match falls within this paragraph
     for (const matchPos of matchPositions) {
       if (matchPos >= pStart && matchPos < pEnd) {
-        // Find the run containing this text
         const localPos = matchPos - pStart;
         replaceInParagraph(pn, searchText, replacementText, localPos);
       }
     }
 
-    globalOffset += pText.length + 1; // +1 for newline
+    globalOffset += pText.length + 1;
   }
 }
 
@@ -137,7 +120,6 @@ function replaceInParagraph(p: Record<string, unknown>, searchText: string, repl
       const text = String(tnn['#text'] ?? '');
 
       if (localPos >= offset && localPos < offset + text.length) {
-        // This text node contains the match
         const inNodePos = localPos - offset;
         const currentText = String(tnn['#text'] ?? '');
         if (currentText.substring(inNodePos, inNodePos + searchText.length) === searchText) {
