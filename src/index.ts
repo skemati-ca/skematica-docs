@@ -2,6 +2,7 @@
 
 import { SkematicaDocsServer } from './server.js';
 import { getEnabledTools, type ToolName } from './config.js';
+import { getAllTools } from './tool-registry.js';
 
 const enabledTools = getEnabledTools();
 
@@ -12,20 +13,15 @@ if (enabledTools.size === 0) {
 
 const server = new SkematicaDocsServer();
 
-// Register enabled tools
-const toolRegistry: Partial<Record<ToolName, { description: string; inputSchema: Record<string, unknown>; handler: (args: Record<string, unknown>) => Promise<Record<string, unknown>> }>> = {
-  // Tools will be registered here as they are implemented
-};
+// Load and register all enabled tools
+const allTools = await getAllTools();
 
 for (const toolName of enabledTools) {
-  const toolDef = toolRegistry[toolName];
+  const toolDef = allTools.get(toolName as ToolName);
   if (toolDef) {
-    server.registerTool({
-      name: toolName,
-      description: toolDef.description,
-      inputSchema: toolDef.inputSchema,
-      handler: toolDef.handler,
-    });
+    server.registerTool(toolDef);
+  } else {
+    console.error(`Warning: Tool "${toolName}" not found in registry.`);
   }
 }
 
