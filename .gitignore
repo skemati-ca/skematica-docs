@@ -1,6 +1,9 @@
 # Documentation research (not for public release)
 docs/
 
+# Conductor project management (not for public release)
+conductor/
+
 # Dependencies
 node_modules/
 
