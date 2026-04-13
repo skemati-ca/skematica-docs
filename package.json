@@ -1,16 +1,16 @@
 {
-  "name": "@skemati-ca/docs",
+  "name": "@skematica/docs",
   "version": "0.1.0",
   "description": "Local MCP server for surgical editing of Office documents (DOCX, XLSX, PPTX)",
   "license": "GPL-3.0-or-later",
   "author": "Daniel Gómez-Padilla <daniel@skemati.ca>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/skemati-ca/skematica-docs"
+    "url": "git+https://github.com/skemati-ca/skematica-docs.git"
   },
   "type": "module",
   "bin": {
-    "skematica-docs": "./dist/index.js"
+    "skematica-docs": "dist/index.js"
   },
   "files": [
     "dist/",

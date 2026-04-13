@@ -59,7 +59,7 @@ Ninguna opción funciona para flujos de trabajo profesionales donde **el histori
 ### Instalación
 
 ```bash
-npm install -g @skemati-ca/docs
+npm install -g @skematica/docs
 ```
 
 ### Configura Tu Cliente MCP
@@ -71,7 +71,7 @@ Añade el servidor a la configuración de tu cliente MCP:
   "mcpServers": {
     "skematica-docs": {
       "command": "npx",
-      "args": ["-y", "@skemati-ca/docs"]
+      "args": ["-y", "@skematica/docs"]
     }
   }
 }

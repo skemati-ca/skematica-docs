@@ -21,7 +21,7 @@ export class SkematicaDocsServer {
   constructor() {
     this.server = new Server(
       {
-        name: '@skemati-ca/docs',
+        name: '@skematica/docs',
         version: '0.1.0',
       },
       {
