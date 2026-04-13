@@ -1,6 +1,7 @@
+import { validateDocxPath } from '../validation.js';
+import { findAllTextInNode } from '../xml-utils.js';
 import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
-import { validateDocxPath } from '../validation.js';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 export const WORD_CREATE_COMMENT_SCHEMA = {
@@ -75,19 +76,13 @@ function extractFullText(docXml: Record<string, unknown>): string {
   const body = docXml?.['w:document']?.['w:body'];
   if (!body) return '';
   const paragraphs = ensureArray(body?.['w:p']);
-  return paragraphs.map((p) => extractParagraphText(p as Record<string, unknown>)).join('\n');
+  return paragraphs.map((p) => findAllTextInNode(p as Record<string, unknown>).join('')).join('\n');
 }
 
-function extractParagraphText(p: Record<string, unknown>): string {
-  return ensureArray(p?.['w:r'])
-    .map((r) => {
-      const rn = r as Record<string, unknown>;
-      return ensureArray(rn?.['w:t']).map((t) => {
-        const tn = t as Record<string, unknown>;
-        return String(tn['#text'] ?? '');
-      }).join('');
-    })
-    .join('');
+function ensureArray(val: unknown): unknown[] {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  return [val];
 }
 
 async function loadOrInitComments(zip: JSZip): Promise<Record<string, unknown>> {
@@ -97,10 +92,8 @@ async function loadOrInitComments(zip: JSZip): Promise<Record<string, unknown>> 
     return parser.parse(str) as Record<string, unknown>;
   }
 
-  // Create new comments.xml
   const commentsXml = { 'w:comments': { '@_xmlns:w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main' } };
 
-  // Add relationship
   const relsFile = zip.file('word/_rels/document.xml.rels');
   if (relsFile) {
     const relsStr = await relsFile.async('text');
@@ -133,19 +126,17 @@ function getNextCommentId(commentsXml: Record<string, unknown>): string {
 
 function addCommentToXml(commentsXml: Record<string, unknown>, id: string, author: string, text: string): void {
   const newComment = {
-    'w:comment': {
-      '@_w:id': id,
-      '@_w:author': author,
-      '@_w:initials': author.charAt(0),
-      '@_w:date': new Date().toISOString(),
-      'w:p': [{ 'w:r': [{ 'w:t': { '@_xml:space': 'preserve', '#text': text } }] }],
-    },
+    '@_w:id': id,
+    '@_w:author': author,
+    '@_w:initials': author.charAt(0),
+    '@_w:date': new Date().toISOString(),
+    'w:p': [{ 'w:r': [{ 'w:t': { '@_xml:space': 'preserve', '#text': text } }] }],
   };
 
   const comments = commentsXml['w:comments'] as Record<string, unknown>;
   if (!comments) return;
   const existing = ensureArray(comments['w:comment']);
-  existing.push(newComment['w:comment']);
+  existing.push(newComment);
   comments['w:comment'] = existing;
 }
 
@@ -157,14 +148,11 @@ function addCommentAnchors(docXml: Record<string, unknown>, searchText: string, 
   let globalOffset = 0;
 
   for (let i = 0; i < paragraphs.length; i++) {
-    const pText = extractParagraphText(paragraphs[i] as Record<string, unknown>);
+    const pText = findAllTextInNode(paragraphs[i] as Record<string, unknown>).join('');
     const localPos = searchText.indexOf(pText);
 
     if (localPos !== -1 || (globalOffset <= searchText.length && globalOffset + pText.length >= searchText.length)) {
-      // This paragraph contains the anchor text - add markers
       const pn = paragraphs[i] as Record<string, unknown>;
-
-      // Add commentRangeEnd and commentReference at the end of paragraph
       const existingR = ensureArray(pn['w:r']);
       pn['w:r'] = [
         ...existingR,
@@ -179,10 +167,4 @@ function addCommentAnchors(docXml: Record<string, unknown>, searchText: string, 
 
 async function saveXmlPart(zip: JSZip, path: string, xml: Record<string, unknown>, b: XMLBuilder): Promise<void> {
   zip.file(path, b.build(xml));
-}
-
-function ensureArray(val: unknown): unknown[] {
-  if (!val) return [];
-  if (Array.isArray(val)) return val;
-  return [val];
 }

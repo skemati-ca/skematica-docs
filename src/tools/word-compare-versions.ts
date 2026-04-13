@@ -1,4 +1,5 @@
 import { validateDocxPath } from '../validation.js';
+import { findAllTextInNode } from '../xml-utils.js';
 
 export const WORD_COMPARE_VERSIONS_SCHEMA = {
   type: 'object',
@@ -85,12 +86,7 @@ export async function wordCompareVersions(args: Record<string, unknown>): Promis
 }
 
 function extractRunText(r: Record<string, unknown>): string {
-  const t = r?.['w:t'];
-  if (!t) return '';
-  return ensureArray(t).map((tn) => {
-    const tnn = tn as Record<string, unknown>;
-    return String(tnn['#text'] ?? '');
-  }).join('');
+  return findAllTextInNode(r).join('');
 }
 
 function ensureArray(val: unknown): unknown[] {

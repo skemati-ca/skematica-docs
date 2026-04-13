@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
 import { validateDocxPath } from '../validation.js';
+import { findAllTextInNode } from '../xml-utils.js';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 export const WORD_SEARCH_REPLACE_SCHEMA = {
@@ -82,20 +83,7 @@ function extractFullText(docXml: Record<string, unknown>): string {
   const body = docXml?.['w:document']?.['w:body'];
   if (!body) return '';
   const paragraphs = ensureArray(body?.['w:p']);
-  return paragraphs.map((p) => extractParagraphText(p as Record<string, unknown>)).join('\n');
-}
-
-function extractParagraphText(p: Record<string, unknown>): string {
-  const runs = ensureArray(p?.['w:r']);
-  return runs.map((r) => {
-    const rn = r as Record<string, unknown>;
-    const t = rn?.['w:t'];
-    if (!t) return '';
-    return ensureArray(t).map((tn) => {
-      const tnn = tn as Record<string, unknown>;
-      return String(tnn['#text'] ?? '');
-    }).join('');
-  }).join('');
+  return paragraphs.map((p) => findAllTextInNode(p as Record<string, unknown>).join('')).join('\n');
 }
 
 function replaceInXml(docXml: Record<string, unknown>, searchText: string, replacementText: string, matchPositions: number[]): void {
@@ -107,7 +95,7 @@ function replaceInXml(docXml: Record<string, unknown>, searchText: string, repla
 
   for (const p of paragraphs) {
     const pn = p as Record<string, unknown>;
-    const pText = extractParagraphText(pn);
+    const pText = findAllTextInNode(pn).join('');
     const pStart = globalOffset;
     const pEnd = globalOffset + pText.length;
 
