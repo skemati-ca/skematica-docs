@@ -94,68 +94,118 @@ export function extractCommentRange(docXml: Record<string, unknown>, commentId: 
   const body = asRecord(asRecord(docXml?.['w:document'])?.['w:body']);
   if (!body) return '';
 
-  const children = flattenBodyChildren(body);
-  let startIdx = -1;
-  let endIdx = -1;
-
-  for (let i = 0; i < children.length; i++) {
-    const child = children[i] as Record<string, unknown>;
-    const keys = Object.keys(child);
-    if (keys.length === 0) continue;
-    const tag = keys[0];
-    const attrs = asRecord(child[tag]);
-
-    if (tag === 'w:commentRangeStart' && attrs?.['@_w:id'] === commentId) {
-      startIdx = i;
-    }
-    if (tag === 'w:commentRangeEnd' && attrs?.['@_w:id'] === commentId) {
-      endIdx = i;
-    }
-  }
-
-  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return '';
-
-  // Collect text between start and end
-  let text = '';
-  for (let i = startIdx + 1; i < endIdx; i++) {
-    const child = children[i] as Record<string, unknown>;
-    const tag = Object.keys(child)[0];
-    if (tag === 'w:p') {
-      text += (text ? '\n' : '') + extractParagraphText(child);
-    }
-    if (tag === 'w:r') {
-      text += extractRunText(child);
-    }
-  }
-
-  return text.trim();
+  return extractTextFromFlatChildren(body, commentId);
 }
 
-function flattenBodyChildren(body: Record<string, unknown>): Record<string, unknown>[] {
-  const result: Record<string, unknown>[] = [];
-
-  for (const [key, val] of Object.entries(body)) {
-    if (key === 'w:p' || key === 'w:tbl' || key === 'w:sectPr' || key === 'w:commentRangeStart' || key === 'w:commentRangeEnd' || key === 'w:r') {
-      const arr = ensureArray(val);
-      for (const item of arr) {
-        result.push({ [key]: item });
+/**
+ * Walks through a paragraph node and its children, collecting text between
+ * commentRangeStart and commentRangeEnd markers.
+ */
+function extractTextFromFlatChildren(body: Record<string, unknown>, targetId: string): string {
+  const texts: string[] = [];
+  let isActive = false;
+  
+  // Process each key in the body object
+  for (const [key, value] of Object.entries(body)) {
+    if (key === 'w:p') {
+      const paragraphs = ensureArray(value);
+      for (const p of paragraphs) {
+        const pText = extractTextFromParagraphWithComments(p as Record<string, unknown>, targetId);
+        if (pText.found) {
+          return pText.text;
+        }
+      }
+    }
+    // Handle comment range markers at body level
+    if (key === 'w:commentRangeStart') {
+      const arr = ensureArray(value);
+      for (const m of arr) {
+        const attrs = asRecord(m);
+        if (attrs?.['@_w:id'] === targetId) {
+          isActive = true;
+        }
+      }
+    }
+    if (key === 'w:commentRangeEnd') {
+      const arr = ensureArray(value);
+      for (const m of arr) {
+        const attrs = asRecord(m);
+        if (attrs?.['@_w:id'] === targetId) {
+          isActive = false;
+        }
+      }
+    }
+    // Handle runs at body level
+    if (key === 'w:r' && isActive) {
+      const arr = ensureArray(value);
+      for (const r of arr) {
+        const rn = asRecord(r);
+        const t = rn?.['w:t'];
+        if (t) {
+          const tArr = ensureArray(t);
+          for (const tn of tArr) {
+            const tnn = asRecord(tn);
+            if (tnn && '#text' in tnn) {
+              texts.push(String(tnn['#text']));
+            }
+          }
+        }
       }
     }
   }
-
-  return result;
+  
+  return texts.join('').trim();
 }
 
-function extractRunText(r: Record<string, unknown>): string {
-  const rn = asRecord(r);
-  const t = rn?.['w:t'];
-  if (!t) return '';
-  return ensureArray(t)
-    .map((tn) => {
-      const tnn = asRecord(tn);
-      return String(tnn?.['#text'] ?? '');
-    })
-    .join('');
+/**
+ * Extracts text for a specific comment ID from a paragraph node.
+ * Scans the paragraph's children for commentRangeStart/End markers.
+ */
+function extractTextFromParagraphWithComments(
+  p: Record<string, unknown>,
+  targetId: string
+): { found: boolean; text: string } {
+  if (!p) return { found: false, text: '' };
+  
+  let isActive = false;
+  const texts: string[] = [];
+  
+  for (const [key, value] of Object.entries(p)) {
+    if (key === 'w:commentRangeStart') {
+      const arr = ensureArray(value);
+      for (const m of arr) {
+        const attrs = asRecord(m);
+        if (attrs?.['@_w:id'] === targetId) {
+          isActive = true;
+        }
+      }
+    }
+    if (key === 'w:commentRangeEnd') {
+      const arr = ensureArray(value);
+      for (const m of arr) {
+        const attrs = asRecord(m);
+        if (attrs?.['@_w:id'] === targetId) {
+          isActive = false;
+        }
+      }
+    }
+    // Collect text from all text nodes (runs, inserts, deletions, etc.)
+    if (key === 'w:r' || key === 'w:ins' || key === 'w:del') {
+      const items = ensureArray(value);
+      for (const item of items) {
+        const inText = findAllTextInNode(item as Record<string, unknown>);
+        if (isActive) {
+          texts.push(...inText);
+        }
+      }
+    }
+  }
+  
+  if (texts.length > 0) {
+    return { found: true, text: texts.join('').trim() };
+  }
+  
+  return { found: false, text: '' };
 }
 
 export function parseComments(commentsXml: Record<string, unknown>): Omit<CommentEntry, 'parentId' | 'replies' | 'isResolved' | 'commentedText'>[] {
