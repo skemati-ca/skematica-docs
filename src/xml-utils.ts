@@ -1,5 +1,5 @@
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
-import type { PageInfo, StyleInfo, CommentEntry } from './docx.js';
+import type { PageInfo, StyleInfo } from './docx.js';
 
 function asRecord(val: unknown): Record<string, unknown> | undefined {
   if (!val || typeof val !== 'object') return undefined;
@@ -208,17 +208,21 @@ function extractTextFromParagraphWithComments(
   return { found: false, text: '' };
 }
 
-export function parseComments(commentsXml: Record<string, unknown>): Omit<CommentEntry, 'parentId' | 'replies' | 'isResolved' | 'commentedText'>[] {
+export function parseComments(commentsXml: Record<string, unknown>): Array<{ id: string; author: string; date: string; text: string; paraId: string }> {
   const comments = commentsXml?.['w:comments']?.['w:comment'];
   if (!comments) return [];
 
   return ensureArray(comments).map((c) => {
     const cn = c as Record<string, unknown>;
+    // Extract paraId from the first w:p's w14:paraId attribute
+    const firstP = ensureArray(cn?.['w:p'])[0] as Record<string, unknown> | undefined;
+    const paraId = firstP ? String(firstP['@_w14:paraId'] ?? '') : '';
     return {
       id: String(cn['@_w:id'] ?? ''),
       author: String(cn['@_w:author'] ?? ''),
       date: String(cn['@_w:date'] ?? ''),
       text: extractCommentText(cn),
+      paraId,
     };
   });
 }
@@ -235,6 +239,13 @@ export function parseCommentsExtended(extXml: Record<string, unknown>): Record<s
   const commentsEx = extXml?.['w15:commentsEx']?.['w15:commentEx'];
   if (!commentsEx) return {};
 
+  // Word stores replies with w15:parentId pointing to the parent comment's w:id
+  // We need to correlate: if commentEx has w15:parentId, that comment is a reply
+  // But we don't know the w:id from commentsExtended alone — we need the ordering
+  // to match paraId to comments.xml entries.
+  // The mapping is: commentsExtended entries appear in the same order as comments.xml
+  // So we map by position: commentEx[i] → comment[i]
+  
   const result: Record<string, { parentId: string | null; done: string }> = {};
   for (const ex of ensureArray(commentsEx)) {
     const en = ex as Record<string, unknown>;

@@ -44,6 +44,9 @@ export async function wordCreateComment(args: Record<string, unknown>): Promise<
   // Add comment to comments.xml
   addCommentToXml(commentsXml, commentId, author, commentText);
 
+  // Add entry to commentsExtended.xml (Word does this for every comment)
+  await initCommentExtendedEntry(zip);
+
   // Add comment anchors to document.xml
   addCommentAnchors(docXml, searchText, commentId);
 
@@ -166,6 +169,50 @@ function addCommentAnchors(docXml: Record<string, unknown>, searchText: string, 
 
 async function saveXmlPart(zip: JSZip, path: string, xml: Record<string, unknown>, b: XMLBuilder): Promise<void> {
   zip.file(path, b.build(xml));
+}
+
+async function initCommentExtendedEntry(zip: JSZip): Promise<void> {
+  const extFile = zip.file('word/commentsExtended.xml');
+  let commentsExtended: Record<string, unknown>;
+
+  if (extFile) {
+    commentsExtended = parser.parse(await extFile.async('text')) as Record<string, unknown>;
+  } else {
+    commentsExtended = { 'w15:commentsEx': { '@_xmlns:w15': 'http://schemas.microsoft.com/office/word/2012/wordml' } };
+    const relsFile = zip.file('word/_rels/document.xml.rels');
+    if (relsFile) {
+      const rels = parser.parse(await relsFile.async('text')) as Record<string, unknown>;
+      const relsObj = rels['Relationships'] as Record<string, unknown> | undefined;
+      if (relsObj) {
+        const existing = ensureArray(relsObj['Relationship']);
+        existing.push({
+          '@_Id': 'rId_commentsExtended',
+          '@_Type': 'http://schemas.microsoft.com/office/word/2012/wordml/commentsEx',
+          '@_Target': 'commentsExtended.xml',
+        });
+        relsObj['Relationship'] = existing;
+      }
+      zip.file('word/_rels/document.xml.rels', builder.build(rels));
+    }
+  }
+
+  const paraId = generateParaId();
+  const commentEx = {
+    '@_w15:paraId': paraId,
+    '@_w15:done': '0',
+  };
+
+  const commentsEx = commentsExtended['w15:commentsEx'] as Record<string, unknown>;
+  if (commentsEx) {
+    const existingEx = ensureArray(commentsEx['w15:commentEx']);
+    existingEx.push(commentEx);
+    commentsEx['w15:commentEx'] = existingEx;
+    zip.file('word/commentsExtended.xml', builder.build(commentsExtended));
+  }
+}
+
+function generateParaId(): string {
+  return Math.random().toString(16).substring(2, 10).toUpperCase();
 }
 
 function ensureArray(val: unknown): unknown[] {

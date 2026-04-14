@@ -1,6 +1,6 @@
 {
   "name": "@skematica/docs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Local MCP server for surgical editing of Office documents (DOCX, XLSX, PPTX)",
   "license": "GPL-3.0-or-later",
   "author": "Daniel Gómez-Padilla <daniel@skemati.ca>",

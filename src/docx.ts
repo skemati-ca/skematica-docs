@@ -235,13 +235,14 @@ export class DocxDocument {
     const comments = parseComments(commentsXml);
     const extended = extXml ? parseCommentsExtended(extXml) : {};
 
-    // Build hierarchy
+    // Build hierarchy — correlate by paraId (not w:id)
     const map = new Map<string, CommentEntry>();
     for (const c of comments) {
-      const ext = extended[c.id];
+      const ext = extended[c.paraId];
+      const parentId = ext?.parentId || null;
       map.set(c.id, {
         ...c,
-        parentId: ext?.parentId || null,
+        parentId,
         isResolved: ext?.done === '1',
         replies: [],
         commentedText: await this.getCommentedText(c.id, docXml),
