@@ -122,13 +122,11 @@ function getNextCommentId(commentsXml: Record<string, unknown>): string {
 
 function addCommentToXml(commentsXml: Record<string, unknown>, id: string, author: string, text: string): void {
   const newComment = {
-    'w:comment': {
-      '@_w:id': id,
-      '@_w:author': author,
-      '@_w:initials': author.charAt(0),
-      '@_w:date': new Date().toISOString(),
-      'w:p': [{ 'w:r': [{ 'w:t': { '@_xml:space': 'preserve', '#text': text } }] }],
-    },
+    '@_w:id': id,
+    '@_w:author': author,
+    '@_w:initials': author.charAt(0),
+    '@_w:date': new Date().toISOString(),
+    'w:p': [{ 'w:r': [{ 'w:t': { '@_xml:space': 'preserve', '#text': text } }] }],
   };
 
   const comments = commentsXml['w:comments'] as Record<string, unknown>;
