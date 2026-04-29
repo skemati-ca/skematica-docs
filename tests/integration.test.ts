@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { DocxDocument } from "../src/docx.js";
 import { validateDocxPath } from "../src/validation.js";
+import { wordGetDocumentInfo } from "../src/tools/word-get-document-info.js";
 
 const fixturesDir = join(process.cwd(), "tests", "fixtures");
 
@@ -116,6 +117,62 @@ describe("Integration: Large document truncation", () => {
       500
     );
     expect(content.content.length).toBeLessThanOrEqual(500);
+  });
+});
+
+describe("word_get_document_info tool", () => {
+  it("returns accurate page count, word count, and format", async () => {
+    const filePath = join(fixturesDir, "simple.docx");
+    const result = await wordGetDocumentInfo({ filePath });
+    const payload = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+
+    expect(payload.pageCount).toBeGreaterThanOrEqual(1);
+    expect(payload.wordCount).toBeGreaterThanOrEqual(10);
+    expect(payload.format).toBe("docx");
+  });
+
+  it("hasTrackChanges is false for a clean document", async () => {
+    const filePath = join(fixturesDir, "simple.docx");
+    const result = await wordGetDocumentInfo({ filePath });
+    const payload = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+
+    expect(payload.hasTrackChanges).toBe(false);
+  });
+
+  it("comment counts match actual comments in file", async () => {
+    const filePath = join(fixturesDir, "with-comments.docx");
+    const result = await wordGetDocumentInfo({ filePath });
+    const payload = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+
+    expect(payload.commentCount).toBeGreaterThanOrEqual(1);
+    expect(typeof payload.unresolvedComments).toBe("number");
+    expect(payload.unresolvedComments).toBeLessThanOrEqual(payload.commentCount);
+  });
+
+  it("returns clear error for invalid file path", async () => {
+    const result = await wordGetDocumentInfo({ filePath: "/nonexistent/file.docx" });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text.length).toBeGreaterThan(0);
+  });
+
+  it("returns clear error for unsupported format", async () => {
+    const result = await wordGetDocumentInfo({ filePath: "/path/to/file.doc" });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toContain("Save As");
+  });
+
+  it("response includes _suggestions", async () => {
+    const filePath = join(fixturesDir, "simple.docx");
+    const result = await wordGetDocumentInfo({ filePath });
+    const payload = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+
+    expect(payload._suggestions).toBeDefined();
+    expect(payload._suggestions.word_get_sections).toBeDefined();
+    expect(payload._suggestions.word_list_comments).toBeDefined();
   });
 });
 

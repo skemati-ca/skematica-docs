@@ -15,7 +15,12 @@ export async function wordGetDocumentInfo(args: Record<string, unknown>): Promis
   if (err) return { content: [{ type: 'text', text: err }], isError: true };
 
   const { DocxDocument } = await import('../docx.js');
-  const doc = await DocxDocument.load(filePath);
+  let doc;
+  try {
+    doc = await DocxDocument.load(filePath);
+  } catch (e) {
+    return { content: [{ type: 'text', text: (e as Error).message }], isError: true };
+  }
   const meta = await doc.getMetadata();
 
   return {
