@@ -19,12 +19,16 @@ Profesionales que trabajan con documentos a diario y usan LLMs como parte de su 
 
 ## Capacidades
 
-### DOCX (Fase 1 — En desarrollo)
+### DOCX (Fase 1 — Completa, 19 herramientas)
 
-- **Leer contenido del documento** — obtener texto estructurado con párrafos, comentarios y metadatos de revisión.
-- **Reemplazar rangos de texto** — reemplazo quirúrgico que preserva el formato del contenido circundante.
-- **Crear comentarios** — anclar nuevos comentarios a fragmentos de texto específicos sin alterar el diseño.
-- **Responder comentarios** — unirse a hilos de discusión existentes manteniendo la jerarquía completa en el panel de revisión de Word.
+- **Navegación** — metadata del documento, contenido completo, estructura de secciones y contenido por sección.
+- **Búsqueda y reemplazo** — búsqueda con contexto, reemplazo quirúrgico que preserva formato.
+- **Comentarios** — listar hilos, crear, responder y resolver comentarios con jerarquía completa.
+- **Layout** — leer y modificar tamaño de página, orientación y márgenes.
+- **Estilos** — listar estilos y aplicarlos a párrafos individuales o rangos.
+- **Comparación** — diff a nivel de carácter entre dos versiones del documento.
+- **Notas al pie** — listar todas las notas con su texto.
+- **Control de cambios** — insertar cambios rastreados (`w:del` / `w:ins`) visibles en el panel de Revisión de Word.
 
 ### XLSX (Fase 2 — Planificada)
 
@@ -102,11 +106,13 @@ El servidor maneja toda la complejidad OOXML — anclaje de comentarios, jerarqu
 │     Servidor skematica-docs     │
 │   (local, sin auth, sin red)    │
 │                                 │
-│  Herramientas:                  │
-│   • WordGetDocumentContent      │
-│   • WordReplaceTextRange        │
-│   • WordCreateNewRootComment    │
-│   • WordReplyToComment          │
+│  19 herramientas DOCX:          │
+│   • Navegación (4)              │
+│   • Búsqueda y edición (2)      │
+│   • Comentarios (4)             │
+│   • Layout (4)                  │
+│   • Estilos y comparación (3)   │
+│   • Avanzado (2)                │
 │                                 │
 │  Motor: Edición quirúrgica OOXML│
 │  (nivel DOM, preserva formato)  │
@@ -124,7 +130,7 @@ El servidor se ejecuta **solo localmente** — nunca transmite tus documentos po
 
 | Fase | Formato | Estado |
 |-------|--------|--------|
-| 1 | **DOCX** — leer, editar, comentar, responder | En desarrollo |
+| 1 | **DOCX** — 19 herramientas: navegación, edición, comentarios, layout, estilos, notas al pie, control de cambios | Completa |
 | 2 | **XLSX** — leer, editar, comentarios de celda | Planificada |
 | 3 | **PPTX** — leer, editar, notas del presentador | Planificada |
 
