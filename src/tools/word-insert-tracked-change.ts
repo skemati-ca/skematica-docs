@@ -76,9 +76,9 @@ function makeDelRun(text: string, rPrNode: ONode | null): ONode {
   return { 'w:r': children };
 }
 
-function makeChangeElement(tag: 'w:del' | 'w:ins', id: number, author: string, date: string, innerRun: ONode): ONode {
+function makeChangeElement(tag: 'w:del' | 'w:ins', id: number, author: string, date: string, innerRuns: ONode | ONode[]): ONode {
   return {
-    [tag]: [innerRun],
+    [tag]: Array.isArray(innerRuns) ? innerRuns : [innerRuns],
     ':@': { '@_w:id': String(id), '@_w:author': author, '@_w:date': date },
   };
 }
@@ -125,8 +125,47 @@ function nextId(nodes: ONode[]): number {
   return max + 1;
 }
 
+interface RunRangeSegment {
+  run: { nodeIdx: number; node: ONode; text: string; start: number };
+  text: string;
+  localStart: number;
+  localEnd: number;
+}
+
+function collectRunsCoveringRange(
+  runs: Array<{ nodeIdx: number; node: ONode; text: string; start: number }>,
+  start: number,
+  end: number,
+): RunRangeSegment[] {
+  const result: RunRangeSegment[] = [];
+  for (const run of runs) {
+    const runEnd = run.start + run.text.length;
+    if (runEnd <= start || run.start >= end) continue;
+
+    const localStart = Math.max(0, start - run.start);
+    const localEnd = Math.min(run.text.length, end - run.start);
+    result.push({
+      run,
+      text: run.text.substring(localStart, localEnd),
+      localStart,
+      localEnd,
+    });
+  }
+  return result;
+}
+
+function sameRunProperties(segments: RunRangeSegment[]): boolean {
+  if (segments.length <= 1) return true;
+  const first = JSON.stringify(getRprFromRun(segments[0].run.node));
+  return segments.every((segment) => JSON.stringify(getRprFromRun(segment.run.node)) === first);
+}
+
+function splitRunAtTextOffset(run: { text: string }, offset: number): [string, string] {
+  return [run.text.substring(0, offset), run.text.substring(offset)];
+}
+
 // Apply a tracked change to the target paragraph at the given match index.
-// Returns true on success, false if the text spans multiple runs or is not found.
+// Returns true on success, false if the text is not found.
 function applyChange(
   paraChildren: ONode[],
   searchText: string,
@@ -163,28 +202,32 @@ function applyChange(
   const matchPos = positions[localMatchIndex];
   const matchEnd = matchPos + searchText.length;
 
-  // Find the run that contains the start of the match.
-  const matchRun = runs.find(r => r.start <= matchPos && matchPos < r.start + r.text.length);
-  if (!matchRun) return false;
+  const segments = collectRunsCoveringRange(runs, matchPos, matchEnd);
+  if (segments.length === 0) return false;
 
-  // If the match extends beyond this single run, we can't handle it (cross-run change).
-  if (matchEnd > matchRun.start + matchRun.text.length) return false;
-
-  const localStart = matchPos - matchRun.start;
-  const beforeText = matchRun.text.substring(0, localStart);
-  const afterText = matchRun.text.substring(localStart + searchText.length);
-  const rPr = getRprFromRun(matchRun.node);
+  const firstSegment = segments[0];
+  const lastSegment = segments[segments.length - 1];
+  const [beforeText] = splitRunAtTextOffset(firstSegment.run, firstSegment.localStart);
+  const [, afterText] = splitRunAtTextOffset(lastSegment.run, lastSegment.localEnd);
+  const firstRPr = getRprFromRun(firstSegment.run.node);
+  const lastRPr = getRprFromRun(lastSegment.run.node);
   const date = new Date().toISOString();
 
   const newNodes: ONode[] = [];
-  if (beforeText) newNodes.push(makeRun(beforeText, rPr));
-  newNodes.push(makeChangeElement('w:del', baseId, author, date, makeDelRun(searchText, rPr)));
-  if (replacementText) {
-    newNodes.push(makeChangeElement('w:ins', baseId + 1, author, date, makeRun(replacementText, rPr)));
-  }
-  if (afterText) newNodes.push(makeRun(afterText, rPr));
+  if (beforeText) newNodes.push(makeRun(beforeText, firstRPr));
 
-  paraChildren.splice(matchRun.nodeIdx, 1, ...newNodes);
+  const delRuns = sameRunProperties(segments)
+    ? [makeDelRun(searchText, firstRPr)]
+    : segments.map((segment) => makeDelRun(segment.text, getRprFromRun(segment.run.node)));
+  newNodes.push(makeChangeElement('w:del', baseId, author, date, delRuns));
+
+  if (replacementText) {
+    newNodes.push(makeChangeElement('w:ins', baseId + 1, author, date, makeRun(replacementText, firstRPr)));
+  }
+  if (afterText) newNodes.push(makeRun(afterText, lastRPr));
+
+  const deleteCount = lastSegment.run.nodeIdx - firstSegment.run.nodeIdx + 1;
+  paraChildren.splice(firstSegment.run.nodeIdx, deleteCount, ...newNodes);
   return true;
 }
 
