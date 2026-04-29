@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - staging
+      - main
+  push:
+    branches:
+      - develop
+      - staging
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  branch-policy:
+    name: Branch Promotion Policy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Validate PR route
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+
+          case "$BASE_REF" in
+            main)
+              test "$HEAD_REF" = "staging"
+              ;;
+            staging)
+              test "$HEAD_REF" = "develop"
+              ;;
+            develop)
+              case "$HEAD_REF" in
+                main|staging)
+                  exit 1
+                  ;;
+              esac
+              ;;
+          esac
+
+  check:
+    name: Lint, Typecheck, Test, Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run project checks
+        run: npm run check
+
+      - name: Build package
+        run: npm run build
+
+      - name: Validate npm package contents
+        if: github.ref_name == 'staging' || github.base_ref == 'staging'
+        run: npm pack --dry-run
