@@ -1,0 +1,8 @@
+{
+  "track_id": "tracked_changes_v2_20260429",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-04-29T16:00:00Z",
+  "updated_at": "2026-04-29T16:00:00Z",
+  "description": "Close the tracked-changes review loop (accept/reject), fix cross-run editing, add direct run formatting, and apply OOXML correctness hardening across the codebase"
+}

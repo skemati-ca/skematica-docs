@@ -1,0 +1,8 @@
+{
+  "track_id": "tables_lists_20260429",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-04-29T16:00:00Z",
+  "updated_at": "2026-04-29T16:00:00Z",
+  "description": "Add table and list manipulation tools. Includes xml-utils refactor to preserveOrder:true to fix body/table interleaving fidelity"
+}

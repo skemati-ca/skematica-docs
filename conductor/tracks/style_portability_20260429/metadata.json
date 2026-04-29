@@ -1,0 +1,8 @@
+{
+  "track_id": "style_portability_20260429",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-04-29T16:00:00Z",
+  "updated_at": "2026-04-29T16:00:00Z",
+  "description": "Flagship feature: copy styles, numbering, theme, and document defaults from a source DOCX into a target DOCX. Enables template portability across users, organizations, and document types"
+}

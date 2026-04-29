@@ -1,0 +1,8 @@
+{
+  "track_id": "references_navigation_20260429",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-04-29T16:00:00Z",
+  "updated_at": "2026-04-29T16:00:00Z",
+  "description": "Add hyperlinks, bookmarks, cross-references, fields (TOC, PAGE), and headers/footers manipulation. Adds a shared .rels mutation helper used across multiple new tools"
+}
