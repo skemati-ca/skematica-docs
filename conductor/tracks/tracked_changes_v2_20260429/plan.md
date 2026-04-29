@@ -26,19 +26,19 @@ Apply correctness invariants from `docs/reference/docx/SKILL.md` across all writ
 
 Extend `word_insert_tracked_change` to handle text spanning multiple runs.
 
-- [ ] Task: Write tests for cross-run tracked change
-    - [ ] Test text spanning 2 runs with same rPr produces single tracked change
-    - [ ] Test text spanning 3+ runs with different rPr preserves each segment's rPr
-    - [ ] Test cross-run match at paragraph boundaries
-    - [ ] Test backward compatibility: single-run cases still work
-- [ ] Task: Extract run-splitting utility
-    - [ ] New helper: splitRunAtTextOffset(run, offset)
-    - [ ] New helper: collectRunsCoveringRange(paragraph, start, end)
-- [ ] Task: Refactor word_insert_tracked_change
-    - [ ] Use new utilities for cross-run matches
-    - [ ] Wrap each spanned run segment in w:ins/w:del
-    - [ ] Preserve rPr per segment
-- [ ] Task: Verify existing tests pass
+- [x] Task: Write tests for cross-run tracked change ed3999a
+    - [x] Test text spanning 2 runs with same rPr produces single tracked change
+    - [x] Test text spanning 3+ runs with different rPr preserves each segment's rPr
+    - [x] Test cross-run match at paragraph boundaries
+    - [x] Test backward compatibility: single-run cases still work
+- [x] Task: Extract run-splitting utility ed3999a
+    - [x] New helper: splitRunAtTextOffset(run, offset)
+    - [x] New helper: collectRunsCoveringRange(paragraph, start, end)
+- [x] Task: Refactor word_insert_tracked_change ed3999a
+    - [x] Use new utilities for cross-run matches
+    - [x] Wrap each spanned run segment in w:ins/w:del
+    - [x] Preserve rPr per segment
+- [x] Task: Verify existing tests pass ed3999a
 
 ## Phase 3: word_accept_changes Tool
 
