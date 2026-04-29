@@ -42,20 +42,20 @@ Extend `word_insert_tracked_change` to handle text spanning multiple runs.
 
 ## Phase 3: word_accept_changes Tool
 
-- [ ] Task: Write tests for word_accept_changes
-    - [ ] Test accepting w:ins promotes children, removes wrapper
-    - [ ] Test accepting w:del drops the content entirely
-    - [ ] Test accepting w:pPrChange / w:rPrChange / w:numberingChange
-    - [ ] Test filter by author limits scope
-    - [ ] Test filter by date range
-    - [ ] Test filter by change ID
-    - [ ] Test response includes _suggestions
-- [ ] Task: Implement word_accept_changes tool
-    - [ ] Walk document tree, identify all change elements
-    - [ ] Apply filters
-    - [ ] Mutate XML per accept rules
-    - [ ] Atomic write
-    - [ ] Register schema and handler
+- [x] Task: Write tests for word_accept_changes 8803211
+    - [x] Test accepting w:ins promotes children, removes wrapper
+    - [x] Test accepting w:del drops the content entirely
+    - [x] Test accepting w:pPrChange / w:rPrChange / w:numberingChange
+    - [x] Test filter by author limits scope
+    - [x] Test filter by date range
+    - [x] Test filter by change ID
+    - [x] Test response includes _suggestions
+- [x] Task: Implement word_accept_changes tool 8803211
+    - [x] Walk document tree, identify all change elements
+    - [x] Apply filters
+    - [x] Mutate XML per accept rules
+    - [x] Atomic write
+    - [x] Register schema and handler
 
 ## Phase 4: word_reject_changes Tool
 
