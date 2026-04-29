@@ -16,10 +16,10 @@ Apply correctness invariants from `docs/reference/docx/SKILL.md` across all writ
     - [x] w:pPr child reordering
     - [x] ID regeneration helpers
     - [x] RSID validator
-- [~] Task: Wire normalize into DocxDocument.setXmlPart
-    - [ ] Apply on every write to word/document.xml
-    - [ ] Verify all existing tests still pass (no regressions)
-- [ ] Task: Add round-trip integration test
+- [x] Task: Wire normalize into DocxDocument.setXmlPart 3e97436
+    - [x] Apply on every write to word/document.xml
+    - [x] Verify all existing tests still pass (no regressions)
+- [~] Task: Add round-trip integration test
     - [ ] Open → save → open → assert structural equivalence
 
 ## Phase 2: Cross-Run Tracked Change Insertion
