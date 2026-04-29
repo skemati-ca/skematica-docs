@@ -184,5 +184,14 @@ export async function getAllTools(): Promise<Map<ToolName, ToolDefinition>> {
     handler: acceptChangesMod.wordAcceptChanges,
   });
 
+  // word_reject_changes
+  const rejectChangesMod = await import('./tools/word-reject-changes.js');
+  tools.set('word_reject_changes', {
+    name: 'word_reject_changes',
+    description: 'Rejects tracked changes in a DOCX file. Drops insertions and restores deleted text as normal document text.',
+    inputSchema: rejectChangesMod.WORD_REJECT_CHANGES_SCHEMA,
+    handler: rejectChangesMod.wordRejectChanges,
+  });
+
   return tools;
 }
