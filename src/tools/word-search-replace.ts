@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
 import { validateDocxPath } from '../validation.js';
-import { findAllTextInNode } from '../xml-utils.js';
+import { findAllTextInNode, collectBodyParagraphs } from '../xml-utils.js';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 export const WORD_SEARCH_REPLACE_SCHEMA = {
@@ -77,17 +77,16 @@ export async function wordSearchReplace(args: Record<string, unknown>): Promise<
 }
 
 function extractFullText(docXml: Record<string, unknown>): string {
-  const body = docXml?.['w:document']?.['w:body'];
+  const body = docXml?.['w:document']?.['w:body'] as Record<string, unknown> | undefined;
   if (!body) return '';
-  const paragraphs = ensureArray(body?.['w:p']);
-  return paragraphs.map((p) => findAllTextInNode(p as Record<string, unknown>).join('')).join('\n');
+  return collectBodyParagraphs(body).map((p) => findAllTextInNode(p).join('')).join('\n');
 }
 
 function replaceInXml(docXml: Record<string, unknown>, searchText: string, replacementText: string, matchPositions: number[]): void {
-  const body = docXml?.['w:document']?.['w:body'];
+  const body = docXml?.['w:document']?.['w:body'] as Record<string, unknown> | undefined;
   if (!body) return;
 
-  const paragraphs = ensureArray(body?.['w:p']);
+  const paragraphs = collectBodyParagraphs(body);
   let globalOffset = 0;
 
   for (const p of paragraphs) {

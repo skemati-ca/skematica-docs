@@ -20,6 +20,8 @@ const ALL_TOOLS = [
   'word_compare_versions',
   'word_get_styles',
   'word_apply_style',
+  'word_get_footnotes',
+  'word_insert_tracked_change',
 ] as const;
 
 export type ToolName = (typeof ALL_TOOLS)[number];

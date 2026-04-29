@@ -90,7 +90,11 @@ export class DocxDocument {
   async getText(): Promise<string> {
     if (this.textCache) return this.textCache;
     const docXml = await this.getDocumentXml();
-    this.textCache = extractTextFromXml(docXml);
+    const { collectBodyParagraphs, extractParagraphText } = await import('./xml-utils.js');
+    const body = docXml?.['w:document']?.['w:body'] as Record<string, unknown> | undefined;
+    this.textCache = body
+      ? collectBodyParagraphs(body).map((p) => extractParagraphText(p)).join('\n')
+      : '';
     return this.textCache;
   }
 
@@ -100,6 +104,19 @@ export class DocxDocument {
     const { extractParagraphs } = await import('./xml-utils.js');
     this.paragraphsCache = extractParagraphs(docXml);
     return this.paragraphsCache;
+  }
+
+  async getParagraphListInfo(): Promise<Array<{ numId: string; ilvl: number } | null>> {
+    const docXml = await this.getDocumentXml();
+    const { extractParagraphNumPr } = await import('./xml-utils.js');
+    return extractParagraphNumPr(docXml);
+  }
+
+  async getFootnotes(): Promise<Array<{ id: string; text: string }>> {
+    const footnotesXml = await this.getFootnotesXml();
+    if (!footnotesXml) return [];
+    const { extractFootnotes } = await import('./xml-utils.js');
+    return extractFootnotes(footnotesXml);
   }
 
   async getMetadata(): Promise<DocxMetadata> {
@@ -344,6 +361,10 @@ export class DocxDocument {
     return this.getXmlPart('word/styles.xml') as Promise<Record<string, unknown> | null>;
   }
 
+  private async getFootnotesXml(): Promise<Record<string, unknown> | null> {
+    return this.getXmlPart('word/footnotes.xml') as Promise<Record<string, unknown> | null>;
+  }
+
   private async getParagraphStyles(): Promise<string[]> {
     const docXml = await this.getDocumentXml();
     const { extractParagraphStyles } = await import('./xml-utils.js');
@@ -367,28 +388,6 @@ export class DocxDocument {
   getZip(): JSZip {
     return this.zip;
   }
-}
-
-function extractTextFromXml(docXml: Record<string, unknown>): string {
-  const body = docXml?.['w:document']?.['w:body'];
-  if (!body) return '';
-
-  const paragraphs = ensureArray((body as Record<string, unknown>)?.['w:p']);
-  return paragraphs.map((p) => extractParagraphText(p as Record<string, unknown>)).join('\n');
-}
-
-function extractParagraphText(p: Record<string, unknown>): string {
-  const runs = ensureArray(p?.['w:r']);
-  return runs.map((r) => {
-    const rn = r as Record<string, unknown>;
-    const t = rn['w:t'];
-    if (!t) return '';
-    const texts = ensureArray(t);
-    return texts.map((tn) => {
-      const tnn = tn as Record<string, unknown>;
-      return tnn['#text'] ?? '';
-    }).join('');
-  }).join('');
 }
 
 function ensureArray(val: unknown): unknown[] {

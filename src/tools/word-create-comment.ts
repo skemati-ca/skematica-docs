@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
 import { validateDocxPath } from '../validation.js';
-import { findAllTextInNode } from '../xml-utils.js';
+import { findAllTextInNode, collectBodyParagraphs } from '../xml-utils.js';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 export const WORD_CREATE_COMMENT_SCHEMA = {
@@ -76,10 +76,9 @@ export async function wordCreateComment(args: Record<string, unknown>): Promise<
 }
 
 function extractFullText(docXml: Record<string, unknown>): string {
-  const body = docXml?.['w:document']?.['w:body'];
+  const body = docXml?.['w:document']?.['w:body'] as Record<string, unknown> | undefined;
   if (!body) return '';
-  const paragraphs = ensureArray(body?.['w:p']);
-  return paragraphs.map((p) => findAllTextInNode(p as Record<string, unknown>).join('')).join('\n');
+  return collectBodyParagraphs(body).map((p) => findAllTextInNode(p).join('')).join('\n');
 }
 
 async function loadOrInitComments(zip: JSZip): Promise<Record<string, unknown>> {
@@ -140,30 +139,22 @@ function addCommentToXml(commentsXml: Record<string, unknown>, id: string, autho
 }
 
 function addCommentAnchors(docXml: Record<string, unknown>, searchText: string, commentId: string): void {
-  const body = docXml?.['w:document']?.['w:body'];
+  const body = docXml?.['w:document']?.['w:body'] as Record<string, unknown> | undefined;
   if (!body) return;
 
-  const paragraphs = ensureArray(body['w:p']);
-  let globalOffset = 0;
+  const paragraphs = collectBodyParagraphs(body);
 
-  for (let i = 0; i < paragraphs.length; i++) {
-    const pText = findAllTextInNode(paragraphs[i] as Record<string, unknown>).join('');
-    const localPos = searchText.indexOf(pText);
+  for (const p of paragraphs) {
+    const pText = findAllTextInNode(p).join('');
+    if (pText.indexOf(searchText) === -1) continue;
 
-    if (localPos !== -1 || (globalOffset <= searchText.length && globalOffset + pText.length >= searchText.length)) {
-      // This paragraph contains the anchor text - add markers
-      const pn = paragraphs[i] as Record<string, unknown>;
-
-      // Add commentRangeEnd and commentReference at the end of paragraph
-      const existingR = ensureArray(pn['w:r']);
-      pn['w:r'] = [
-        ...existingR,
-        { 'w:commentRangeEnd': { '@_w:id': commentId } },
-        { 'w:r': [{ 'w:commentReference': { '@_w:id': commentId } }] },
-      ];
-      return;
-    }
-    globalOffset += pText.length + 1;
+    // Inject markers at the paragraph level (siblings of w:r, not inside them)
+    const existingR = ensureArray(p['w:r']);
+    p['w:commentRangeStart'] = { '@_w:id': commentId };
+    p['w:r'] = existingR;
+    p['w:commentRangeEnd'] = { '@_w:id': commentId };
+    p['w:rRef'] = { 'w:rPr': {}, 'w:commentReference': { '@_w:id': commentId } };
+    return;
   }
 }
 

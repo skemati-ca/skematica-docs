@@ -23,10 +23,13 @@ export async function wordGetContent(args: Record<string, unknown>): Promise<Rec
 
   const { DocxDocument } = await import('../docx.js');
   const doc = await DocxDocument.load(filePath);
-  const text = await doc.getText();
-  const paragraphs = await doc.getParagraphs();
-  const comments = await doc.getComments();
-  const sections = await doc.getSections();
+  const [text, paragraphs, comments, sections, listInfo] = await Promise.all([
+    doc.getText(),
+    doc.getParagraphs(),
+    doc.getComments(),
+    doc.getSections(),
+    doc.getParagraphListInfo(),
+  ]);
 
   const truncated = text.length > maxChars;
   const content = truncated ? text.substring(0, maxChars) : text;
@@ -44,7 +47,15 @@ export async function wordGetContent(args: Record<string, unknown>): Promise<Rec
         type: 'text',
         text: JSON.stringify({
           text: content,
-          paragraphs: paragraphs.map((p: string, i: number) => ({ index: i, text: p })),
+          paragraphs: paragraphs.map((p: string, i: number) => {
+            const numPr = listInfo[i] ?? null;
+            const entry: Record<string, unknown> = { index: i, text: p };
+            if (numPr) {
+              entry.isListItem = true;
+              entry.listLevel = numPr.ilvl;
+            }
+            return entry;
+          }),
           comments: (comments as unknown as Record<string, unknown>[]).map(flattenComment),
           truncated,
           totalChars: text.length,

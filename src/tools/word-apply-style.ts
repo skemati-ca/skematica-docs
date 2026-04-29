@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
 import { validateDocxPath } from '../validation.js';
+import { collectBodyParagraphs } from '../xml-utils.js';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
 
 export const WORD_APPLY_STYLE_SCHEMA = {
@@ -36,7 +37,7 @@ export async function wordApplyStyle(args: Record<string, unknown>): Promise<Rec
   const body = docXml?.['w:document']?.['w:body'] as Record<string, unknown> | undefined;
   if (!body) return { content: [{ type: 'text', text: 'No document body found.' }], isError: true };
 
-  const paragraphs = ensureArray(body['w:p']) as Record<string, unknown>[];
+  const paragraphs = collectBodyParagraphs(body);
   const targetIndex = paragraphIndex ?? 0;
   const indices: number[] = paragraphRange
     ? Array.from({ length: paragraphRange.end - paragraphRange.start + 1 }, (_, i) => paragraphRange.start + i)

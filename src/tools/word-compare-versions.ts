@@ -1,5 +1,5 @@
 import { validateDocxPath } from '../validation.js';
-import { findAllTextInNode } from '../xml-utils.js';
+import { findAllTextInNode, collectBodyParagraphs } from '../xml-utils.js';
 
 export const WORD_COMPARE_VERSIONS_SCHEMA = {
   type: 'object',
@@ -42,7 +42,7 @@ export async function wordCompareVersions(args: Record<string, unknown>): Promis
     const body = changedDoc?.['w:document']?.['w:body'];
 
     if (body) {
-      const paragraphs = ensureArray((body as Record<string, unknown>)?.['w:p']);
+      const paragraphs = collectBodyParagraphs(body as Record<string, unknown>);
       for (const p of paragraphs) {
         const pn = p as Record<string, unknown>;
         const runs = ensureArray(pn?.['w:r']);

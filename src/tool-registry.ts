@@ -157,5 +157,23 @@ export async function getAllTools(): Promise<Map<ToolName, ToolDefinition>> {
     handler: applyMod.wordApplyStyle,
   });
 
+  // word_get_footnotes
+  const footnotesMod = await import('./tools/word-get-footnotes.js');
+  tools.set('word_get_footnotes', {
+    name: 'word_get_footnotes',
+    description: 'Returns all footnotes in the document with their text content. Essential for legal and academic documents.',
+    inputSchema: footnotesMod.WORD_GET_FOOTNOTES_SCHEMA,
+    handler: footnotesMod.wordGetFootnotes,
+  });
+
+  // word_insert_tracked_change
+  const trackedChangeMod = await import('./tools/word-insert-tracked-change.js');
+  tools.set('word_insert_tracked_change', {
+    name: 'word_insert_tracked_change',
+    description: 'Inserts a tracked change (deletion + optional insertion) into a DOCX file. Produces w:del/w:ins pairs visible in Word\'s Track Changes pane.',
+    inputSchema: trackedChangeMod.WORD_INSERT_TRACKED_CHANGE_SCHEMA,
+    handler: trackedChangeMod.wordInsertTrackedChange,
+  });
+
   return tools;
 }

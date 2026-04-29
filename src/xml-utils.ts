@@ -33,20 +33,50 @@ export function buildXml(xml: Record<string, unknown>): string {
   return builder.build(xml);
 }
 
+/**
+ * Returns all paragraphs in the document body in a consistent order:
+ * body-level paragraphs first, then paragraphs inside table cells
+ * (w:tbl → w:tr → w:tc → w:p).
+ *
+ * Note: inter-ordering between body paragraphs and table cells is not
+ * preserved because fast-xml-parser merges same-tag siblings into arrays,
+ * losing their position relative to other tags. A future improvement could
+ * use preserveOrder:true to get exact document order.
+ */
+export function collectBodyParagraphs(body: Record<string, unknown>): Record<string, unknown>[] {
+  const result: Record<string, unknown>[] = [];
+
+  for (const p of ensureArray(body['w:p'])) {
+    result.push(asRecord(p) || {});
+  }
+
+  for (const tbl of ensureArray(body['w:tbl'])) {
+    const tblNode = asRecord(tbl) || {};
+    for (const tr of ensureArray(tblNode['w:tr'])) {
+      const trNode = asRecord(tr) || {};
+      for (const tc of ensureArray(trNode['w:tc'])) {
+        const tcNode = asRecord(tc) || {};
+        for (const p of ensureArray(tcNode['w:p'])) {
+          result.push(asRecord(p) || {});
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 export function extractParagraphs(docXml: Record<string, unknown>): string[] {
   const body = asRecord(asRecord(docXml?.['w:document'])?.['w:body']);
   if (!body) return [];
-  const paragraphs = ensureArray(body?.['w:p']);
-  return paragraphs.map((p) => extractParagraphText(asRecord(p) || {}));
+  return collectBodyParagraphs(body).map((p) => extractParagraphText(p));
 }
 
 export function extractParagraphStyles(docXml: Record<string, unknown>): string[] {
   const body = asRecord(asRecord(docXml?.['w:document'])?.['w:body']);
   if (!body) return [];
-  const paragraphs = ensureArray(body?.['w:p']);
-  return paragraphs.map((p) => {
-    const pn = asRecord(p);
-    const pPr = asRecord(pn?.['w:pPr']);
+  return collectBodyParagraphs(body).map((p) => {
+    const pPr = asRecord(p?.['w:pPr']);
     const pStyle = asRecord(pPr?.['w:pStyle']);
     return (pStyle?.['@_w:val'] as string) || '';
   });
@@ -98,13 +128,13 @@ export function extractCommentRange(docXml: Record<string, unknown>, commentId: 
 }
 
 /**
- * Walks through a paragraph node and its children, collecting text between
- * commentRangeStart and commentRangeEnd markers.
+ * Walks through a body (or table cell) node, collecting text between
+ * commentRangeStart and commentRangeEnd markers. Recurses into tables.
  */
 function extractTextFromFlatChildren(body: Record<string, unknown>, targetId: string): string {
   const texts: string[] = [];
   let isActive = false;
-  
+
   // Process each key in the body object
   for (const [key, value] of Object.entries(body)) {
     if (key === 'w:p') {
@@ -113,6 +143,19 @@ function extractTextFromFlatChildren(body: Record<string, unknown>, targetId: st
         const pText = extractTextFromParagraphWithComments(p as Record<string, unknown>, targetId);
         if (pText.found) {
           return pText.text;
+        }
+      }
+    }
+    // Recurse into table cells: w:tbl → w:tr → w:tc
+    if (key === 'w:tbl') {
+      for (const tbl of ensureArray(value)) {
+        const tblNode = asRecord(tbl) || {};
+        for (const tr of ensureArray(tblNode['w:tr'])) {
+          const trNode = asRecord(tr) || {};
+          for (const tc of ensureArray(trNode['w:tc'])) {
+            const result = extractTextFromFlatChildren(asRecord(tc) || {}, targetId);
+            if (result) return result;
+          }
         }
       }
     }
@@ -308,6 +351,38 @@ function lookupPageSizeLabel(width: number, height: number): string {
     if (dims.w === width && dims.h === height) return label;
   }
   return 'Custom';
+}
+
+export function extractParagraphNumPr(docXml: Record<string, unknown>): Array<{ numId: string; ilvl: number } | null> {
+  const body = asRecord(asRecord(docXml?.['w:document'])?.['w:body']);
+  if (!body) return [];
+  return collectBodyParagraphs(body).map((p) => {
+    const pPr = asRecord(p?.['w:pPr']);
+    const numPr = asRecord(pPr?.['w:numPr']);
+    if (!numPr) return null;
+    const numIdVal = asRecord(numPr?.['w:numId'])?.['@_w:val'];
+    if (!numIdVal || numIdVal === '0') return null;
+    const ilvlVal = asRecord(numPr?.['w:ilvl'])?.['@_w:val'];
+    return { numId: String(numIdVal), ilvl: Number(ilvlVal ?? 0) };
+  });
+}
+
+export function extractFootnotes(footnotesXml: Record<string, unknown>): Array<{ id: string; text: string }> {
+  const footnotes = ensureArray(footnotesXml?.['w:footnotes']?.['w:footnote']);
+  const result: Array<{ id: string; text: string }> = [];
+  for (const fn of footnotes) {
+    const fnNode = asRecord(fn);
+    if (!fnNode) continue;
+    const id = String(fnNode['@_w:id'] ?? '');
+    const type = String(fnNode['@_w:type'] ?? '');
+    if (type === 'separator' || type === 'continuationSeparator' || id === '-1' || id === '0') continue;
+    const text = ensureArray(fnNode['w:p'])
+      .map((p) => extractParagraphText(asRecord(p) || {}))
+      .join('\n')
+      .trim();
+    if (text) result.push({ id, text });
+  }
+  return result;
 }
 
 export function extractStyles(stylesXml: Record<string, unknown>): StyleInfo[] {
