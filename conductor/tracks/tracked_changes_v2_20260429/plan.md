@@ -4,7 +4,7 @@
 
 Apply correctness invariants from `docs/reference/docx/SKILL.md` across all writes.
 
-- [ ] Task: Write tests for ooxml-normalize module
+- [~] Task: Write tests for ooxml-normalize module
     - [ ] Test xml:space="preserve" added to whitespace-bearing w:t
     - [ ] Test smart quotes preserved through round-trip
     - [ ] Test w:pPr children reordered to (pStyle, numPr, spacing, ind, jc, rPr)
