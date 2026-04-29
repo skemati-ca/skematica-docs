@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DocxDocument } from "../src/docx.js";
 import { validateDocxPath } from "../src/validation.js";
@@ -192,5 +193,26 @@ describe("Integration: Write operations", () => {
 
     // Clean up
     rmSync(dest);
+  });
+
+  it("preserves observable document structure across open-save-open round trip", async () => {
+    const tempDir = mkdtempSync(join(tmpdir(), "skematica-docx-roundtrip-"));
+    const outputPath = join(tempDir, "roundtrip.docx");
+
+    try {
+      const src = join(fixturesDir, "structured.docx");
+      const original = await DocxDocument.load(src);
+
+      await original.save(outputPath);
+
+      const roundTripped = await DocxDocument.load(outputPath);
+
+      expect(await roundTripped.getParagraphs()).toEqual(await original.getParagraphs());
+      expect(await roundTripped.getParagraphListInfo()).toEqual(await original.getParagraphListInfo());
+      expect(await roundTripped.getSections()).toEqual(await original.getSections());
+      expect(await roundTripped.getPageSetup()).toEqual(await original.getPageSetup());
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 });
