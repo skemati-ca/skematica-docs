@@ -4,19 +4,19 @@
 
 Apply correctness invariants from `docs/reference/docx/SKILL.md` across all writes.
 
-- [~] Task: Write tests for ooxml-normalize module
-    - [ ] Test xml:space="preserve" added to whitespace-bearing w:t
-    - [ ] Test smart quotes preserved through round-trip
-    - [ ] Test w:pPr children reordered to (pStyle, numPr, spacing, ind, jc, rPr)
-    - [ ] Test paraId regeneration for values >= 0x7FFFFFFF
-    - [ ] Test RSID 8-digit hex validation/coercion
-- [ ] Task: Implement src/ooxml-normalize.ts
-    - [ ] Whitespace normalization function
-    - [ ] Smart-quote entity encoding
-    - [ ] w:pPr child reordering
-    - [ ] ID regeneration helpers
-    - [ ] RSID validator
-- [ ] Task: Wire normalize into DocxDocument.setXmlPart
+- [x] Task: Write tests for ooxml-normalize module d0ac133
+    - [x] Test xml:space="preserve" added to whitespace-bearing w:t
+    - [x] Test smart quotes preserved through round-trip
+    - [x] Test w:pPr children reordered to (pStyle, numPr, spacing, ind, jc, rPr)
+    - [x] Test paraId regeneration for values >= 0x7FFFFFFF
+    - [x] Test RSID 8-digit hex validation/coercion
+- [x] Task: Implement src/ooxml-normalize.ts d0ac133
+    - [x] Whitespace normalization function
+    - [x] Smart-quote entity encoding
+    - [x] w:pPr child reordering
+    - [x] ID regeneration helpers
+    - [x] RSID validator
+- [~] Task: Wire normalize into DocxDocument.setXmlPart
     - [ ] Apply on every write to word/document.xml
     - [ ] Verify all existing tests still pass (no regressions)
 - [ ] Task: Add round-trip integration test
