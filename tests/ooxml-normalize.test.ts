@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { join } from 'node:path';
+import { DocxDocument } from '../src/docx.js';
 import { normalizeDocumentXml } from '../src/ooxml-normalize.js';
+
+const fixturesDir = join(process.cwd(), 'tests', 'fixtures');
 
 describe('normalizeDocumentXml', () => {
   it('adds xml:space="preserve" to w:t nodes with leading or trailing whitespace', () => {
@@ -78,5 +82,37 @@ describe('normalizeDocumentXml', () => {
     expect(normalized).toMatch(/w:rsidR="[0-9A-F]{8}"/);
     expect(normalized).toMatch(/w:rsidRPr="[0-9A-F]{8}"/);
     expect(normalized).toMatch(/w:rsidP="[0-9A-F]{8}"/);
+  });
+
+  it('is applied when DocxDocument writes word/document.xml parts', async () => {
+    const doc = await DocxDocument.load(join(fixturesDir, 'simple.docx'));
+    const writableDoc = doc as unknown as {
+      setXmlPart(path: string, xml: Record<string, unknown>): Promise<void>;
+      getZip(): { file(path: string): { async(type: 'text'): Promise<string> } | null };
+    };
+
+    await writableDoc.setXmlPart('word/document.xml', {
+      'w:document': {
+        '@_xmlns:w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
+        'w:body': {
+          'w:p': {
+            '@_w:rsidR': 'invalid',
+            'w:pPr': {
+              'w:rPr': { 'w:b': '' },
+              'w:pStyle': { '@_w:val': 'Heading1' },
+            },
+            'w:r': {
+              'w:t': { '#text': ' “quoted” ' },
+            },
+          },
+        },
+      },
+    });
+
+    const documentXml = await writableDoc.getZip().file('word/document.xml')?.async('text');
+
+    expect(documentXml).toContain('<w:t xml:space="preserve"> &#x201C;quoted&#x201D; </w:t>');
+    expect(documentXml).toMatch(/w:rsidR="[0-9A-F]{8}"/);
+    expect(documentXml?.indexOf('<w:pStyle')).toBeLessThan(documentXml?.indexOf('<w:rPr') ?? 0);
   });
 });
