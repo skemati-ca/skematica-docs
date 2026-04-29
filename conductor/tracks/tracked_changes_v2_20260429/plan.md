@@ -59,16 +59,16 @@ Extend `word_insert_tracked_change` to handle text spanning multiple runs.
 
 ## Phase 4: word_reject_changes Tool
 
-- [ ] Task: Write tests for word_reject_changes
-    - [ ] Test rejecting w:ins drops content entirely
-    - [ ] Test rejecting w:del restores w:delText as w:t
-    - [ ] Test filter by author / date / id
-    - [ ] Test response includes _suggestions
-- [ ] Task: Implement word_reject_changes tool
-    - [ ] Walk + filter (shared with accept logic)
-    - [ ] Apply reject rules
-    - [ ] Atomic write
-    - [ ] Register schema and handler
+- [x] Task: Write tests for word_reject_changes 4754aa8
+    - [x] Test rejecting w:ins drops content entirely
+    - [x] Test rejecting w:del restores w:delText as w:t
+    - [x] Test filter by author / date / id
+    - [x] Test response includes _suggestions
+- [x] Task: Implement word_reject_changes tool 4754aa8
+    - [x] Walk + filter (shared with accept logic)
+    - [x] Apply reject rules
+    - [x] Atomic write
+    - [x] Register schema and handler
 
 ## Phase 5: word_set_run_format Tool
 
