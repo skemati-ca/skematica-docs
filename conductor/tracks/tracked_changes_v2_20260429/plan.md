@@ -22,7 +22,7 @@ Apply correctness invariants from `docs/reference/docx/SKILL.md` across all writ
 - [x] Task: Add round-trip integration test c0e6292
     - [x] Open → save → open → assert structural equivalence
 
-## Phase 2: Cross-Run Tracked Change Insertion
+## Phase 2: Cross-Run Tracked Change Insertion [checkpoint: 2b7946d]
 
 Extend `word_insert_tracked_change` to handle text spanning multiple runs.
 
