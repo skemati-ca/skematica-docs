@@ -1,6 +1,6 @@
 # Implementation Plan: Tracked Changes Closure + Correctness Hardening
 
-## Phase 1: OOXML Correctness Hardening (Foundational)
+## Phase 1: OOXML Correctness Hardening (Foundational) [checkpoint: 3df7042]
 
 Apply correctness invariants from `docs/reference/docx/SKILL.md` across all writes.
 
