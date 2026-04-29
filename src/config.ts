@@ -22,6 +22,7 @@ const ALL_TOOLS = [
   'word_apply_style',
   'word_get_footnotes',
   'word_insert_tracked_change',
+  'word_accept_changes',
 ] as const;
 
 export type ToolName = (typeof ALL_TOOLS)[number];
