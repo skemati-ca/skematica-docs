@@ -390,12 +390,6 @@ export class DocxDocument {
   }
 }
 
-function ensureArray(val: unknown): unknown[] {
-  if (!val) return [];
-  if (Array.isArray(val)) return val;
-  return [val];
-}
-
 function countWords(text: string): number {
   return text.split(/\s+/).filter((w) => w.length > 0).length;
 }

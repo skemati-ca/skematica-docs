@@ -82,9 +82,3 @@ export async function wordApplyStyle(args: Record<string, unknown>): Promise<Rec
     }],
   };
 }
-
-function ensureArray(val: unknown): unknown[] {
-  if (!val) return [];
-  if (Array.isArray(val)) return val;
-  return [val];
-}
