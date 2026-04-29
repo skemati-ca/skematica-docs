@@ -40,7 +40,7 @@ Extend `word_insert_tracked_change` to handle text spanning multiple runs.
     - [x] Preserve rPr per segment
 - [x] Task: Verify existing tests pass ed3999a
 
-## Phase 3: word_accept_changes Tool
+## Phase 3: word_accept_changes Tool [checkpoint: f30b4f0]
 
 - [x] Task: Write tests for word_accept_changes 8803211
     - [x] Test accepting w:ins promotes children, removes wrapper
