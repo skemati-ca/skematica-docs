@@ -4,12 +4,10 @@ on:
   pull_request:
     branches:
       - develop
-      - staging
       - main
   push:
     branches:
       - develop
-      - staging
       - main
 
 permissions:
@@ -31,14 +29,11 @@ jobs:
 
           case "$BASE_REF" in
             main)
-              test "$HEAD_REF" = "staging"
-              ;;
-            staging)
               test "$HEAD_REF" = "develop"
               ;;
             develop)
               case "$HEAD_REF" in
-                main|staging)
+                main)
                   exit 1
                   ;;
               esac
@@ -69,5 +64,5 @@ jobs:
         run: npm run build
 
       - name: Validate npm package contents
-        if: github.ref_name == 'staging' || github.base_ref == 'staging'
+        if: github.ref_name == 'develop' || github.base_ref == 'main'
         run: npm pack --dry-run

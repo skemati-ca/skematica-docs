@@ -305,17 +305,18 @@ A task is complete when:
 Permanent branches:
 
 1. `develop`: daily integration branch.
-2. `staging`: release validation branch.
-3. `main`: production branch. npm publication runs only from `main`.
+2. `main`: production branch. npm publication runs only from `main`.
+
+This branch model applies to this npm package repository. Applications that need online user acceptance testing may use a separate staging branch or environment.
 
 Promotion path:
 
 1. Create all feature, fix, docs, and chore branches from `develop`.
 2. Merge work branches into `develop` by pull request after CI passes.
-3. Promote `develop` to `staging` by pull request for release validation.
-4. Promote `staging` to `main` by pull request for production release.
+3. Validate `develop` locally and in CI, including `npm pack --dry-run`.
+4. Promote `develop` to `main` by pull request for production release.
 5. Never merge a work branch directly into `main`.
-6. Never publish to npm from `develop`, `staging`, or local machines.
+6. Never publish to npm from `develop` or local machines.
 
 ### Pre-Deployment Checklist
 - [ ] All tests passing
@@ -328,13 +329,12 @@ Promotion path:
 
 ### Deployment Steps
 1. Merge work branch to `develop`
-2. Promote `develop` to `staging`
-3. Confirm CI and `npm pack --dry-run` pass on `staging`
-4. Promote `staging` to `main`
-5. GitHub Actions publishes to npm from `main`
-6. Verify npm package availability
-7. Test critical paths
-8. Monitor for errors
+2. Confirm CI and `npm pack --dry-run` pass on `develop`
+3. Promote `develop` to `main`
+4. GitHub Actions publishes to npm from `main`
+5. Verify npm package availability
+6. Test critical paths
+7. Monitor for errors
 
 ### Post-Deployment
 1. Monitor analytics

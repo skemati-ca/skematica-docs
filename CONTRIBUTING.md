@@ -22,23 +22,23 @@ npm run check        # lint + typecheck + tests
 
 ## Flujo de Git y CI/CD
 
-Este repositorio usa tres ramas permanentes:
+Este repositorio usa dos ramas permanentes:
 
 - `develop`: base de trabajo diario.
-- `staging`: integración previa a release.
 - `main`: rama de producción; publicar desde aquí dispara deploy a npm.
+
+Este flujo aplica a este repo. No define la política para aplicaciones que sí requieran un entorno online de staging.
 
 Reglas:
 
 1. Todo cambio empieza desde `develop`.
 2. Crear una rama descriptiva: `feat/<nombre>`, `fix/<nombre>`, `docs/<nombre>` o `chore/<nombre>`.
 3. Abrir PR de la rama de trabajo hacia `develop`.
-4. Cuando `develop` esté listo para validar release, abrir PR de `develop` hacia `staging`.
-5. `staging` ejecuta CI y valida el paquete con `npm pack --dry-run`.
-6. Cuando `staging` esté aprobado, abrir PR de `staging` hacia `main`.
-7. No se hacen merges directos de ramas de trabajo hacia `main`.
-8. El deploy a npm ocurre solo por push/merge a `main`.
-9. Si la versión de `package.json` ya existe en npm, el workflow de publicación se salta el publish.
+4. `develop` ejecuta CI y valida el paquete con `npm pack --dry-run`.
+5. Cuando `develop` esté listo para publicar, abrir PR de `develop` hacia `main`.
+6. No se hacen merges directos de ramas de trabajo hacia `main`.
+7. El deploy a npm ocurre solo por push/merge a `main`.
+8. Si la versión de `package.json` ya existe en npm, el workflow de publicación se salta el publish.
 
 Comandos típicos:
 
@@ -61,16 +61,15 @@ npm run check
 git push origin develop --follow-tags
 ```
 
-Después se promueve con PRs `develop` -> `staging` -> `main`. El workflow `Publish to npm` publica automáticamente el paquete de `main` usando el secret `NPM_TOKEN`.
+Después se promueve con PR `develop` -> `main`. El workflow `Publish to npm` publica automáticamente el paquete de `main` usando el secret `NPM_TOKEN`.
 
 Configuración requerida en GitHub:
 
 - Secret de repositorio `NPM_TOKEN` con permiso de publicación para `@skematica/docs`.
-- Branch protection en `develop`, `staging` y `main`.
+- Branch protection en `develop` y `main`.
 - Required status check: `Lint, Typecheck, Test, Build`.
 - Required status check en PRs: `Branch Promotion Policy`.
-- `main` debe aceptar merges únicamente desde PRs cuya rama base anterior sea `staging`.
-- `staging` debe aceptar merges únicamente desde PRs cuya rama base anterior sea `develop`.
+- `main` debe aceptar merges únicamente desde PRs cuya rama origen sea `develop`.
 
 Para configurar el secret sin exponerlo en logs ni commits:
 
