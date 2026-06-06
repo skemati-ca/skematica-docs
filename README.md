@@ -147,4 +147,4 @@ Este proyecto es software libre y de código abierto bajo la **GNU General Publi
 
 ## Acerca de
 
-`skematica-docs` es el primer proyecto de código abierto de [Skemática](https://skemati.ca) — una capa de inteligencia relacional tipada para descubrimiento emergente sobre datos públicos.
+`skematica-docs` es el primer proyecto de código abierto de [Skemática](https://skemati.ca). Lo construimos para nuestros propios agentes — es la herramienta que usamos internamente para que nuestros LLMs lean y editen documentos DOCX en flujos de trabajo reales. Lo abrimos porque creemos que esta capacidad no debería depender de un proveedor: cualquier equipo, con cualquier agente, debería poder trabajar con Office de la misma forma.
