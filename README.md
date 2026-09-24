@@ -1,12 +1,12 @@
 # skematica-docs
 
-**Servidor MCP para editar documentos de oficina de forma nativa — empezando por DOCX, luego XLSX y PPTX — desde Claude, ChatGPT, Gemini o cualquier cliente compatible con MCP.**
+**Servidor MCP para crear y editar documentos de Microsoft Office de forma nativa — DOCX, XLSX y PPTX — desde Claude, ChatGPT, Gemini o cualquier agente compatible con MCP.**
 
 ## Qué Es
 
-`skematica-docs` es un servidor MCP local que permite a asistentes de IA **leer, editar y anotar** los documentos de oficina que ya tienes en tu máquina — **sin destruir formato, romper historial de revisiones ni corromper hilos de comentarios**.
+`skematica-docs` es un servidor MCP local que permite a asistentes de IA **crear, leer, editar y anotar** documentos de Microsoft Office de forma nativa — **sin destruir formato, romper historial de revisiones ni corromper hilos de comentarios**.
 
-En lugar de extraer texto plano (que pierde todo el formato) o generar un archivo nuevo (que descarta el original), este servidor realiza **ediciones quirúrgicas** directamente sobre las estructuras OOXML dentro de archivos `.docx`. Tu documento se ve exactamente igual — salvo por los cambios que pediste.
+En lugar de extraer texto plano (que pierde todo el formato) o generar un archivo nuevo (que descarta el original), este servidor realiza **ediciones quirúrgicas** directamente sobre las estructuras OOXML dentro de archivos `.docx`, `.xlsx` y `.pptx`. Tu documento se ve exactamente igual — salvo por los cambios que pediste.
 
 ## Usuarios Objetivo
 
@@ -52,6 +52,12 @@ La mayoría de herramientas de "IA para documentos" hoy te fuerzan a una de dos 
 Ninguna opción funciona para flujos de trabajo profesionales donde **el historial de ediciones es la pista de auditoría**.
 
 `skematica-docs` resuelve esto operando a nivel OOXML — manipulando las estructuras XML dentro del paquete `.docx` directamente. El resultado es un documento **visualmente idéntico** al original excepto por los cambios específicos que pediste, con todo el formato, comentarios y control de revisiones intacto.
+
+### La visión
+
+Las capacidades de edición nativa de Office que hoy vienen empaquetadas en productos enterprise — Microsoft Copilot, Claude for Work, Google Workspace AI — no deberían estar atadas a un proveedor específico. Un profesional que usa ChatGPT debería poder editar un contrato en Word con la misma precisión que uno que usa Claude. Un equipo que mañana cambia de agente no debería perder sus herramientas de documento.
+
+`skematica-docs` es la capa open-source que hace eso posible: las mismas capacidades, para cualquier agente, corriendo localmente, sin vendor lock-in.
 
 ## Inicio Rápido
 
@@ -131,8 +137,9 @@ El servidor se ejecuta **solo localmente** — nunca transmite tus documentos po
 | Fase | Formato | Estado |
 |-------|--------|--------|
 | 1 | **DOCX** — 19 herramientas: navegación, edición, comentarios, layout, estilos, notas al pie, control de cambios | Completa |
-| 2 | **XLSX** — leer, editar, comentarios de celda | Planificada |
-| 3 | **PPTX** — leer, editar, notas del presentador | Planificada |
+| 2 | **XLSX** — crear hojas, leer, editar valores y fórmulas, comentarios de celda | Planificada |
+| 3 | **PPTX** — crear presentaciones, leer, editar diapositivas y notas del presentador | Planificada |
+| 4 | **Creación nativa** — crear DOCX, XLSX y PPTX desde cero con estilos, plantillas y estructura | Planificada |
 
 ## Licencia
 
@@ -140,4 +147,4 @@ Este proyecto es software libre y de código abierto bajo la **GNU General Publi
 
 ## Acerca de
 
-`skematica-docs` es el primer proyecto de código abierto de [Skemática](https://skemati.ca) — una capa de inteligencia relacional tipada para descubrimiento emergente sobre datos públicos.
+`skematica-docs` es el primer proyecto de código abierto de [Skemática](https://skemati.ca). Lo construimos para nuestros propios agentes — es la herramienta que usamos internamente para que nuestros LLMs lean y editen documentos DOCX en flujos de trabajo reales. Lo abrimos porque creemos que esta capacidad no debería depender de un proveedor: cualquier equipo, con cualquier agente, debería poder trabajar con Office de la misma forma.
