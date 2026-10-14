@@ -3,7 +3,7 @@
   "version": "0.1.4",
   "description": "Local MCP server for surgical editing of Office documents (DOCX, XLSX, PPTX)",
   "license": "GPL-3.0-or-later",
-  "author": "Daniel Gómez-Padilla <daniel@skemati.ca>",
+  "author": "Daniel G\u00f3mez-Padilla <daniel@skemati.ca>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/skemati-ca/skematica-docs.git"
@@ -25,7 +25,8 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm test"
+    "check": "npm run lint && npm run typecheck && npm test",
+    "check:writing": "bash scripts/check-writing-changed.sh"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

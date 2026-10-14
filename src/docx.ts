@@ -381,7 +381,11 @@ export class DocxDocument {
 
   private async setXmlPart(path: string, xml: Record<string, unknown>): Promise<void> {
     const { buildXml } = await import('./xml-utils.js');
-    const str = buildXml(xml);
+    let str = buildXml(xml);
+    if (path === 'word/document.xml') {
+      const { normalizeDocumentXml } = await import('./ooxml-normalize.js');
+      str = normalizeDocumentXml(str);
+    }
     this.zip.file(path, str);
   }
 
