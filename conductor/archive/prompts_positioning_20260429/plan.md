@@ -79,3 +79,7 @@ Foundation: expose MCP Prompts alongside existing Tools without changing tool be
 ## Phase 6: Conductor - User Manual Verification
 
 - [ ] Task: Conductor - User Manual Verification 'Track prompts_positioning' (Protocol in workflow.md)
+
+## Cierre (2026-10-14)
+
+Track cancelado: Daniel decidió archivar el proyecto `skematica-docs` el 2026-10-14. Estado al cerrar: `new`. Las casillas abiertas de arriba no se harán.

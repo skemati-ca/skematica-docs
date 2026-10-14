@@ -93,3 +93,7 @@ Migrate fast-xml-parser config to preserveOrder:true. Required for safe table ed
 ## Phase 7: Conductor - User Manual Verification
 
 - [ ] Task: Conductor - User Manual Verification 'Track tables_lists' (Protocol in workflow.md)
+
+## Cierre (2026-10-14)
+
+Track cancelado: Daniel decidió archivar el proyecto `skematica-docs` el 2026-10-14. Estado al cerrar: `new`. Las casillas abiertas de arriba no se harán.

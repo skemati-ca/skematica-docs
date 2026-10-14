@@ -33,3 +33,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 QWEN.md
+
+# Carpeta local de la herramienta Kilo Code; no se versiona.
+.kilocode/
