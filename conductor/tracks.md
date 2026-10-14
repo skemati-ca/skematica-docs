@@ -16,7 +16,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [ ] Track: Tracked Changes Closure + Correctness Hardening
+## [~] Track: Tracked Changes Closure + Correctness Hardening
 
 *Link: [./conductor/tracks/tracked_changes_v2_20260429/](./conductor/tracks/tracked_changes_v2_20260429/)*
 
