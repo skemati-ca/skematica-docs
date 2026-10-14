@@ -88,3 +88,7 @@ Extend `word_insert_tracked_change` to handle text spanning multiple runs.
 ## Phase 6: Conductor - User Manual Verification
 
 - [ ] Task: Conductor - User Manual Verification 'Track tracked_changes_v2' (Protocol in workflow.md)
+
+## Cierre (2026-10-14)
+
+Track cancelado: Daniel decidió archivar el proyecto `skematica-docs` el 2026-10-14. Estado al cerrar: `in_progress`. Las casillas abiertas de arriba no se harán.

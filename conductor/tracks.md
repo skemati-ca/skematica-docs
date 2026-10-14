@@ -4,42 +4,45 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
+> **Proyecto archivado el 2026-10-14.** No hay tracks activos. Los tracks en
+> curso o sin empezar se cancelaron y están en `conductor/archive/`.
+
 ## [x] Track: Build DOCX MCP Server — Read, Edit, Comment, Reply, Layout, Styles, Compare
 
-*Link: [./conductor/tracks/docx_mcp_server_20260412/](./conductor/tracks/docx_mcp_server_20260412/)*
+*Link: [./conductor/archive/docx_mcp_server_20260412/](./conductor/archive/docx_mcp_server_20260412/)*
 
 ---
 
 ## [x] Track: Public Documentation — Architecture, Tools, Contributing
 
-*Link: [./conductor/tracks/public_docs_20260412/](./conductor/tracks/public_docs_20260412/)*
+*Link: [./conductor/archive/public_docs_20260412/](./conductor/archive/public_docs_20260412/)*
 
 ---
 
-## [~] Track: Tracked Changes Closure + Correctness Hardening
+## [cancelado] Track: Tracked Changes Closure + Correctness Hardening
 
-*Link: [./conductor/tracks/tracked_changes_v2_20260429/](./conductor/tracks/tracked_changes_v2_20260429/)*
-
----
-
-## [ ] Track: Template & Style Portability
-
-*Link: [./conductor/tracks/style_portability_20260429/](./conductor/tracks/style_portability_20260429/)*
+*Link: [./conductor/archive/tracked_changes_v2_20260429/](./conductor/archive/tracked_changes_v2_20260429/)*
 
 ---
 
-## [ ] Track: References & Navigation
+## [cancelado] Track: Template & Style Portability
 
-*Link: [./conductor/tracks/references_navigation_20260429/](./conductor/tracks/references_navigation_20260429/)*
-
----
-
-## [ ] Track: Tables & Lists
-
-*Link: [./conductor/tracks/tables_lists_20260429/](./conductor/tracks/tables_lists_20260429/)*
+*Link: [./conductor/archive/style_portability_20260429/](./conductor/archive/style_portability_20260429/)*
 
 ---
 
-## [ ] Track: MCP Workflows + User-Agnostic Positioning
+## [cancelado] Track: References & Navigation
 
-*Link: [./conductor/tracks/prompts_positioning_20260429/](./conductor/tracks/prompts_positioning_20260429/)*
+*Link: [./conductor/archive/references_navigation_20260429/](./conductor/archive/references_navigation_20260429/)*
+
+---
+
+## [cancelado] Track: Tables & Lists
+
+*Link: [./conductor/archive/tables_lists_20260429/](./conductor/archive/tables_lists_20260429/)*
+
+---
+
+## [cancelado] Track: MCP Workflows + User-Agnostic Positioning
+
+*Link: [./conductor/archive/prompts_positioning_20260429/](./conductor/archive/prompts_positioning_20260429/)*

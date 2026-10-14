@@ -1,5 +1,7 @@
 # skematica-docs
 
+> **Proyecto archivado (2026-10-14).** Este repositorio ya no se mantiene y no recibe cambios. El paquete `@skematica/docs` en npm queda marcado como obsoleto.
+
 **Servidor MCP para crear y editar documentos de Microsoft Office de forma nativa — DOCX, XLSX y PPTX — desde Claude, ChatGPT, Gemini o cualquier agente compatible con MCP.**
 
 ## Qué Es
